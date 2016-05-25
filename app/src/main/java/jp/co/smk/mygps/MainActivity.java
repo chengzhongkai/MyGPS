@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
 
     private Timer mTimer;
     private static MainActivity inst;
-    private ArrayList<String> smsList = new ArrayList<String>();
+    private ArrayList<String> smsList = new ArrayList<>();
     private LocationManager mLocationManager;
 
     public static MainActivity instance() {
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
             }
         });
 
-        this.findViewById(R.id.UpdateList).setOnClickListener(this);
+        findViewById(R.id.UpdateList).setOnClickListener(this);
         // GPS
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         boolean gpsFlg = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -145,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
     }
 
     public void getGps() {
+        if(((EditText) findViewById(R.id.address)).getText().toString().length()<=1){return;}
         mLocationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, //LocationManager.NETWORK_PROVIDER,
                 3000, // 通知のための最小時間間隔（ミリ秒）
@@ -214,8 +215,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
                 + "\nLng=" + location.getLongitude();
         Log.d("GPS", msg);
         Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-        sendSMS(((EditText) findViewById(R.id.address)).getText().toString(), "http://maps.google.com/maps?q=loc" + location.getLatitude() + "," + location.getLongitude());
+        sendSMS(((EditText) findViewById(R.id.address)).getText().toString(), "http://maps.google.com/maps?q=loc:" + location.getLatitude() + "," + location.getLongitude());
         mLocationManager.removeUpdates(this);
+        mTimer.cancel();
     }
 
     @Override
@@ -238,12 +240,12 @@ public class MainActivity extends AppCompatActivity implements OnClickListener, 
 
         String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
         if(!provider.contains("gps")){ //if gps is disabled
-            final Intent poke = new Intent();
-            poke.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
-            poke.addCategory(Intent.CATEGORY_ALTERNATIVE);
-            poke.setData(Uri.parse("3"));
-            sendBroadcast(poke);
-
+            final Intent poke = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+           // poke.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
+           // poke.addCategory(Intent.CATEGORY_ALTERNATIVE);
+           // poke.setData(Uri.parse("3"));
+           // sendBroadcast(poke);
+            startActivity(poke);
 
         }
     }
